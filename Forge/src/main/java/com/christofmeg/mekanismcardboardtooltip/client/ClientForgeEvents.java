@@ -11,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -47,10 +48,11 @@ public class ClientForgeEvents {
                                 event.getToolTip().add(MekanismLang.BLOCK_DATA.translateColored(EnumColor.INDIGO, BooleanStateDisplay.YesNo.of(true, true)));
 
                                 Block block = data.blockState.getBlock();
+                                MutableComponent containedName = Component.translatable(block.getDescriptionId());
                                 event.getToolTip().remove(MekanismLang.BLOCK.translate(block));
                                 event.getToolTip().add(
                                         TextComponentUtil.build(EnumColor.INDIGO, MekanismLang.BLOCK.translate(
-                                                Component.translatable(block.getDescriptionId()).withStyle(ChatFormatting.GRAY)))
+                                                containedName.withStyle(ChatFormatting.GRAY)))
                                 );
 
                                 if (block instanceof SpawnerBlock) {
@@ -69,10 +71,19 @@ public class ClientForgeEvents {
                                             if (type != null) {
                                                 ResourceLocation entityLocation = ForgeRegistries.ENTITY_TYPES.getKey(type);
                                                 if (entityLocation != null) {
+                                                    MutableComponent entityName = Component.translatable(capitaliseAllWords(entityLocation.toShortLanguageKey().replace("_", " ")));
+                                                    event.getToolTip().set(0,
+                                                            Component.translatable("block.mekanism.cardboard_box")
+                                                                    .append(Component.literal(" "))
+                                                                    .append(containedName.withStyle(ChatFormatting.WHITE))
+                                                                    .append(Component.literal(" ("))
+                                                                    .append(entityName.withStyle(ChatFormatting.WHITE))
+                                                                    .append(Component.literal(")"))
+                                                    );
                                                     event.getToolTip().add(
                                                         TextComponentUtil.build(EnumColor.INDIGO,
                                                             Component.translatable("cardboard_box.mekanism.block_entity.spawn_type",
-                                                                Component.translatable(capitaliseAllWords(entityLocation.toShortLanguageKey().replace("_", " "))).withStyle(ChatFormatting.GRAY)
+                                                                    entityName.withStyle(ChatFormatting.GRAY)
                                                             )
                                                         )
                                                     );
@@ -81,6 +92,13 @@ public class ClientForgeEvents {
                                         }
 
                                     }
+                                } else {
+                                    event.getToolTip().set(0,
+                                            Component.translatable("block.mekanism.cardboard_box")
+                                                    .append(Component.literal(" ("))
+                                                    .append(containedName.withStyle(ChatFormatting.WHITE))
+                                                    .append(Component.literal(")"))
+                                    );
                                 }
                             }
                         } else {
